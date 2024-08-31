@@ -1,0 +1,17 @@
+broker_endpoint='http://storage_broker:50051'
+pg_distrib_dir='/usr/local/'
+listen_pg_addr='0.0.0.0:6400'
+listen_http_addr='0.0.0.0:9898'
+remote_storage={ endpoint='http://minio:9000', bucket_name='neon', bucket_region='eu-north-1', prefix_in_bucket='/pageserver' }
+page_cache_size=163840
+control_plane_api='http://storage_controller:1234/upcall/v1/'
+metric_collection_endpoint = 'http://pageserver1:80/metrics'
+metric_collection_interval = '5min'
+image_compression = 'zstd'
+
+[tenant_config]
+pitr_interval='20m'
+compaction_target_size=536870912
+checkpoint_distance=268435456
+gc_period='5m'
+
