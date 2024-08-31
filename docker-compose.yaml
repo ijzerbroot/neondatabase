@@ -225,6 +225,7 @@ services:
       - 3080:3080 # http endpoints
     entrypoint:
       - "/shell/compute.sh"
+    shm_size: '5gb'
     depends_on:
       - safekeeper1
       - safekeeper2
