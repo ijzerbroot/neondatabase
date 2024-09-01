@@ -258,7 +258,7 @@ spec:
     - name: AWS_SECRET_ACCESS_KEY
       value: password
     - name: BROKER_ENDPOINT
-      value: http://neon-pod:50051
+      value: http://storage_broker:50051
     - name: http_proxy
       value: ""
     - name: https_proxy
@@ -291,7 +291,7 @@ spec:
     - name: SAFEKEEPER_ADVERTISE_URL
       value: neon-pod:5454
     - name: BROKER_ENDPOINT
-      value: http://neon-pod:50051
+      value: http://storage_broker:50051
     - name: AWS_ACCESS_KEY_ID
       value: minio
     - name: AWS_SECRET_ACCESS_KEY
