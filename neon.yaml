@@ -1,0 +1,422 @@
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-4.9.4-rhel
+
+# NOTE: If you generated this yaml from an unprivileged and rootless podman container on an SELinux
+# enabled system, check the podman generate kube man page for steps to follow to ensure that your pod/container
+# has the right permissions to access the volumes added.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2024-08-29T09:22:56Z"
+  labels:
+    app: neon-pod
+  name: neon-pod
+spec:
+  ports:
+  - name: "9000"
+    nodePort: 30110
+    port: 9000
+    targetPort: 9000
+  - name: "9001"
+    nodePort: 31339
+    port: 9001
+    targetPort: 9001
+  - name: "50051"
+    nodePort: 32599
+    port: 50051
+    targetPort: 50051
+  - name: "1234"
+    nodePort: 31379
+    port: 1234
+    targetPort: 1234
+  - name: "1235"
+    nodePort: 30659
+    port: 1235
+    targetPort: 1235
+  - name: "5432"
+    nodePort: 31102
+    port: 5432
+    targetPort: 5432
+  - name: "6400"
+    nodePort: 30370
+    port: 6400
+    targetPort: 6400
+  - name: "9898"
+    nodePort: 32501
+    port: 9898
+    targetPort: 9898
+  - name: "6401"
+    nodePort: 30248
+    port: 6401
+    targetPort: 6401
+  - name: "9899"
+    nodePort: 31038
+    port: 9899
+    targetPort: 9899
+  - name: "5454"
+    nodePort: 30674
+    port: 5454
+    targetPort: 5454
+  - name: "7676"
+    nodePort: 30769
+    port: 7676
+    targetPort: 7676
+  - name: "5455"
+    nodePort: 30666
+    port: 5455
+    targetPort: 5455
+  - name: "7677"
+    nodePort: 30158
+    port: 7677
+    targetPort: 7677
+  - name: "5456"
+    nodePort: 32004
+    port: 5456
+    targetPort: 5456
+  - name: "7678"
+    nodePort: 32295
+    port: 7678
+    targetPort: 7678
+  - name: "3080"
+    nodePort: 32620
+    port: 3080
+    targetPort: 3080
+  - name: "55433"
+    nodePort: 30024
+    port: 55433
+    targetPort: 55433
+  selector:
+    app: neon-pod
+  type: NodePort
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2024-08-29T09:22:56Z"
+  labels:
+    app: neon-pod
+  name: neon-pod
+spec:
+  containers:
+  - args:
+    - server
+    - /data
+    - --address
+    - :9000
+    - --console-address
+    - :9001
+    env:
+    - name: MINIO_ROOT_USER
+      value: minio
+    - name: MINIO_ROOT_PASSWORD
+      value: password
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: public
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+    image: quay.io/minio/minio:RELEASE.2023-01-12T02-06-16Z
+    name: minio
+    ports:
+    - containerPort: 9000
+      hostPort: 9000
+    - containerPort: 9001
+      hostPort: 9001
+    volumeMounts:
+    - mountPath: /data
+      name: data-neon-minio-host-0
+  - command:
+    - storage_broker
+    - --listen-addr=0.0.0.0:50051
+    image: localhost/local/neon:6514
+    env:
+    - name: MINIO_ROOT_USER
+      value: minio
+    - name: MINIO_ROOT_PASSWORD
+      value: password
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: public
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+    name: storage_broker
+    ports:
+    - containerPort: 50051
+    securityContext: {}
+    volumeMounts:
+    - mountPath: /data
+      name: b5c90503c70e592825ff660c9b45ee6e1366b280e6b8fa2b723c3c3ae31153ae-pvc
+  - command:
+    - storage_controller
+    - -l
+    - 0.0.0.0:1234
+    - --dev
+    - --database-url
+    - postgresql://postgres:postgres@neon-pod:5432/storage_controller
+    - --max-offline-interval
+    - 20s
+    - --max-warming-up-interval
+    - 30s
+    image: localhost/local/neon:6514
+    name: storage_controller
+    env:
+    - name: MINIO_ROOT_USER
+      value: minio
+    - name: MINIO_ROOT_PASSWORD
+      value: password
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: public
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+    ports:
+    - containerPort: 1234
+      hostPort: 1234
+    - containerPort: 1235
+    securityContext: {}
+    volumeMounts:
+    - mountPath: /data
+      name: b541eb808f8cfe8c7ff3f1d5e24cd22a410889f3606126522cdd0335c6b36dba-pvc
+  - env:
+    - name: POSTGRES_PASSWORD
+      value: postgres
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+    image: docker.io/library/postgres:16
+    name: standalonepg
+    ports:
+    - containerPort: 5432
+    securityContext:
+      runAsNonRoot: true
+    volumeMounts:
+    - mountPath: /var/lib/postgresql/data
+      name: data-neon-standalonepg-host-0
+  - args:
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.path=/prometheus
+    - --web.console.libraries=/usr/share/prometheus/console_libraries
+    - --web.console.templates=/usr/share/prometheus/consoles
+    - --web.listen-address=:7000
+    image: docker.io/prom/prometheus:v2.52.0
+    name: prometheus
+    ports:
+    - containerPort: 7000
+      hostPort: 7000
+    securityContext: {}
+    volumeMounts:
+    - mountPath: /etc/prometheus/prometheus.yml
+      name: root-neon-prometheus.yml-host-0
+    - mountPath: /prometheus
+      name: neon_prometheus-pvc
+    env:
+    - name: MINIO_ROOT_USER
+      value: minio
+    - name: MINIO_ROOT_PASSWORD
+      value: password
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: public
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+  - args:
+    - /usr/local/bin/pageserver -D /data/.neon
+    command:
+    - /bin/sh
+    - -c
+    env:
+    - name: AWS_ACCESS_KEY_ID
+      value: minio
+    - name: AWS_SECRET_ACCESS_KEY
+      value: password
+    - name: BROKER_ENDPOINT
+      value: http://neon-pod:50051
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+    image: localhost/local/neon:6514
+    name: pageserver1
+    ports:
+    - containerPort: 6400
+    - containerPort: 9898
+    securityContext: {}
+    volumeMounts:
+    - mountPath: /data/.neon
+      name: data-neon-pageserver1-host-0
+    - mountPath: /data
+      name: 8da644653a6060aff8735925013ba40c1238a0eaa891303d5a1305f29f4149f8-pvc
+  - args:
+    - safekeeper --listen-pg=$SAFEKEEPER_ADVERTISE_URL --listen-http='0.0.0.0:7676' --id=$SAFEKEEPER_ID
+      --broker-endpoint=$BROKER_ENDPOINT -D /data --remote-storage="{endpoint='http://minio:9000',
+      bucket_name='neon', bucket_region='eu-north-1', prefix_in_bucket='/safekeeper/'}"
+    command:
+    - /bin/sh
+    - -c
+    env:
+    - name: SAFEKEEPER_ID
+      value: "1"
+    - name: SAFEKEEPER_ADVERTISE_URL
+      value: neon-pod:5454
+    - name: BROKER_ENDPOINT
+      value: http://neon-pod:50051
+    - name: AWS_ACCESS_KEY_ID
+      value: minio
+    - name: AWS_SECRET_ACCESS_KEY
+      value: password
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+    image: localhost/local/neon:6514
+    name: safekeeper1
+    ports:
+    - containerPort: 5454
+    - containerPort: 7676
+    securityContext: {}
+    volumeMounts:
+    - mountPath: /data
+      name: data-neon-sk1-host-0
+  - command:
+    - /shell/compute.sh
+    image: localhost/local/neoncompute:6514
+    name: neoncompute1
+    securityContext:
+      allowPrivilegeEscalation: true
+      privileged: true
+    ports:
+    - containerPort: 3080
+    - containerPort: 55433
+      hostPort: 55433
+    volumeMounts:
+    - mountPath: /var/db/postgres/specs/
+      name: root-neon-compute_wrapper-var-db-postgres-specs-host-0
+    - mountPath: /shell/
+      name: root-neon-compute_wrapper-shell-host-1
+    #- mountPath: /dev/shm/
+    #  name: sharedmemory
+    env:
+    - name: MINIO_ROOT_USER
+      value: minio
+    - name: MINIO_ROOT_PASSWORD
+      value: password
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: public
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+  - args:
+    - until pg_isready -h compute -p 55433 -U cloud_admin ; do echo 'Waiting to start
+      compute...' && sleep 1; done
+    command:
+    - /bin/bash
+    - -c
+    image: docker.io/library/postgres:16
+    name: neoncomputeisready1
+    env:
+    - name: MINIO_ROOT_USER
+      value: minio
+    - name: MINIO_ROOT_PASSWORD
+      value: password
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: public
+    - name: http_proxy
+      value: ""
+    - name: https_proxy
+      value: ""
+    - name: HTTP_PROXY
+      value: ""
+    - name: HTTPS_PROXY
+      value: ""
+    securityContext:
+      runAsNonRoot: true
+  restartPolicy: Always
+  volumes:
+  - hostPath:
+      path: /samsung/frank/neonpodman/minio
+      type: Directory
+    name: data-neon-minio-host-0
+  - name: b5c90503c70e592825ff660c9b45ee6e1366b280e6b8fa2b723c3c3ae31153ae-pvc
+    persistentVolumeClaim:
+      claimName: b5c90503c70e592825ff660c9b45ee6e1366b280e6b8fa2b723c3c3ae31153ae
+  - name: b541eb808f8cfe8c7ff3f1d5e24cd22a410889f3606126522cdd0335c6b36dba-pvc
+    persistentVolumeClaim:
+      claimName: b541eb808f8cfe8c7ff3f1d5e24cd22a410889f3606126522cdd0335c6b36dba
+  - hostPath:
+      path: /samsung/frank/neonpodman/standalonepg
+      type: Directory
+    name: data-neon-standalonepg-host-0
+  - hostPath:
+      path: /samsung/frank/neonpodman/prometheus.yml
+      type: File
+    name: root-neon-prometheus.yml-host-0
+  - name: neon_prometheus-pvc
+    persistentVolumeClaim:
+      claimName: neon_prometheus
+  - hostPath:
+      path: /samsung/frank/neonpodman/pageserver1
+      type: Directory
+    name: data-neon-pageserver1-host-0
+  - name: 8da644653a6060aff8735925013ba40c1238a0eaa891303d5a1305f29f4149f8-pvc
+    persistentVolumeClaim:
+      claimName: 8da644653a6060aff8735925013ba40c1238a0eaa891303d5a1305f29f4149f8
+  - name: 4730ae5aeaeab47b10b101435f392fc625e3cf48f5721cb43d2719f5ab353922-pvc
+    persistentVolumeClaim:
+      claimName: 4730ae5aeaeab47b10b101435f392fc625e3cf48f5721cb43d2719f5ab353922
+  - hostPath:
+      path: /samsung/frank/neonpodman/sk1
+      type: Directory
+    name: data-neon-sk1-host-0
+  - hostPath:
+      path: /samsung/frank/neonpodman/compute_wrapper/var/db/postgres/specs
+      type: Directory
+    name: root-neon-compute_wrapper-var-db-postgres-specs-host-0
+  - hostPath:
+      path: /samsung/frank/neonpodman/compute_wrapper/shell
+      type: Directory
+    name: root-neon-compute_wrapper-shell-host-1
+  - emptyDir:
+      medium: Memory
+      sizeLimit: 24Gi
+    name: sharedmemory
